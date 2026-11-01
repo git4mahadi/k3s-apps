@@ -1,0 +1,83 @@
+<main class="page">
+  <header class="header">
+    <h1>Todo App</h1>
+    <p>Create and manage your tasks</p>
+    @if (apiStatus) {
+      <p class="api-status" [class.api-ok]="apiHealthy" [class.api-error]="!apiHealthy">
+        {{ apiStatus }}
+      </p>
+    }
+  </header>
+
+  <section class="card">
+    <h2>{{ editingId === null ? 'Create Task' : 'Edit Task' }}</h2>
+
+    <form class="form" (ngSubmit)="saveTask()">
+      <label>
+        Title
+        <input
+          type="text"
+          name="title"
+          [(ngModel)]="title"
+          placeholder="What needs to be done?"
+          required
+        />
+      </label>
+
+      <label>
+        Description
+        <textarea
+          name="description"
+          [(ngModel)]="description"
+          rows="3"
+          placeholder="Optional details"
+        ></textarea>
+      </label>
+
+      @if (error) {
+        <p class="error">{{ error }}</p>
+      }
+
+      <div class="actions">
+        <button type="submit">{{ editingId === null ? 'Save Task' : 'Update Task' }}</button>
+        @if (editingId !== null) {
+          <button type="button" class="secondary" (click)="cancelEdit()">Cancel</button>
+        }
+      </div>
+    </form>
+  </section>
+
+  <section class="card">
+    <div class="list-header">
+      <h2>Task List</h2>
+      <button type="button" class="secondary" (click)="loadTasks()">Refresh</button>
+    </div>
+
+    @if (loading) {
+      <p>Loading tasks...</p>
+    } @else if (tasks.length === 0) {
+      <p class="empty">No tasks yet. Create one above.</p>
+    } @else {
+      <ul class="task-list">
+        @for (task of tasks; track task.id) {
+          <li>
+            <div>
+              <strong>{{ task.title }}</strong>
+              @if (task.description) {
+                <p>{{ task.description }}</p>
+              }
+              <small>
+                {{ task.completed ? 'Completed' : 'Open' }}
+                · Updated {{ task.updatedAt | date: 'medium' }}
+              </small>
+            </div>
+            <div class="task-actions">
+              <button type="button" class="secondary" (click)="startEdit(task)">Edit</button>
+              <button type="button" class="danger" (click)="deleteTask(task)">Delete</button>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+</main>

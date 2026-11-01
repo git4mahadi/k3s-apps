@@ -1,0 +1,48 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: todo-postgres
+    environment:
+      POSTGRES_DB: todos
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Abc@564#ffe
+    ports:
+      - "5433:5432"
+    volumes:
+      - todo_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d todos"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  todo-api:
+    build:
+      context: ./todo-api
+      dockerfile: Dockerfile
+    container_name: todo-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DATABASE_URL: jdbc:postgresql://postgres:5432/todos
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: Abc@564#ffe
+    ports:
+      - "8088:8080"
+
+  todo-ui:
+    build:
+      context: ./todo-ui
+      dockerfile: Dockerfile
+      args:
+        BUILD_CONFIGURATION: prod
+    container_name: todo-ui
+    depends_on:
+      - todo-api
+    ports:
+      - "4250:80"
+
+volumes:
+  todo_pg_data:
